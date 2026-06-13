@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  username       String   @unique
+  password       String?
+  displayName    String?
+  bio            String?
+  avatarUrl      String?
+  plan              String   @default("free") // "free" | "pro"
+  aiGenerations     Int      @default(0)
+  stripeCustomerId  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  links       Link[]
+  pageSetting PageSetting?
+  pageViews   PageView[]
+}
+
+model Link {
+  id           String   @id @default(cuid())
+  userId       String
+  title        String
+  url          String
+  icon         String?
+  thumbnailUrl String?
+  position     Int      @default(0)
+  isActive     Boolean  @default(true)
+  category     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkClicks LinkClick[]
+
+  @@index([userId])
+}
+
+model PageSetting {
+  id          String @id @default(cuid())
+  userId      String @unique
+  theme       String @default("minimal")  // minimal, dark, gradient, glass, retro
+  bgColor     String @default("#0F0F10")
+  bgGradient  String?
+  buttonStyle String @default("rounded")  // rounded, pill, square, outline
+  font        String @default("Inter")
+  avatarShape String @default("circle")   // circle, square, rounded
+  accentColor String @default("#6C47FF")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  userId    String
+  viewedAt  DateTime @default(now())
+  referrer  String?
+  ipAddress String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([viewedAt])
+}
+
+model LinkClick {
+  id        String   @id @default(cuid())
+  linkId    String
+  clickedAt DateTime @default(now())
+  referrer  String?
+  ipAddress String?
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+  @@index([clickedAt])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([isRead])
+}
