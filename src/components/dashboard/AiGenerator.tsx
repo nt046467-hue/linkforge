@@ -79,24 +79,25 @@ export default function AiGenerator({ onClose }: AiGeneratorProps) {
     if (!aiResult) return
 
     try {
-      // Apply display name
-      if (aiResult.display_name && user) {
-        setUser({ ...user, displayName: aiResult.display_name })
-      }
+      const typed = aiResult as AiResult
 
-      // Apply bio
-      if (aiResult.bio && user) {
-        setUser({ ...user, bio: aiResult.bio })
+      // Apply display name and bio together
+      if (user) {
+        setUser({
+          ...user,
+          displayName: typed.display_name ? String(typed.display_name) : user.displayName,
+          bio: typed.bio ? String(typed.bio) : user.bio,
+        })
       }
 
       // Apply theme recommendation
-      if (aiResult.theme_recommendation) {
-        setPageSettings({ theme: aiResult.theme_recommendation })
+      if (typed.theme_recommendation) {
+        setPageSettings({ theme: String(typed.theme_recommendation) })
       }
 
       // Apply accent color
-      if (aiResult.accent_color) {
-        setPageSettings({ accentColor: aiResult.accent_color })
+      if (typed.accent_color) {
+        setPageSettings({ accentColor: String(typed.accent_color) })
       }
 
       // Apply suggested links
